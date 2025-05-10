@@ -3,17 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bible Verses Table</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <title>Bible Clock</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <h1>Bible Verses</h1>
-    </header>
-    <main>
-        <div id="csv-output"></div>
-    </main>
+    <div class="container">
+        <div class="theme-toggle">
+            <button id="themeToggle">🌙</button>
+        </div>
+        <div class="clock">
+            <div id="time" class="time">--:--</div>
+            <div id="ampm" class="ampm">--</div>
+        </div>
+        <div class="verse-container">
+            <div id="reference" class="reference">Loading...</div>
+            <div id="verse" class="verse">Loading verses...</div>
+        </div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html> 
