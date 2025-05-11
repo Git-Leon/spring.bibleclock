@@ -11,34 +11,33 @@ public class BibleService implements Loggable {
 
     public BibleVerse getVerseForTime(String timeString) {
         // Parse time string (format: "HH:mm")
-        String[] timeParts = timeString.split(":");
+        final String[] timeParts = timeString.split(":");
         if (timeParts.length != 2) {
             throw new IllegalArgumentException("Invalid time format. Expected HH:mm");
         }
 
-        int hours = Integer.parseInt(timeParts[0]);
-        int minutes = Integer.parseInt(timeParts[1]);
+        final int hours = Integer.parseInt(timeParts[0]);
+        final int minutes = Integer.parseInt(timeParts[1]);
 
         // Convert to 12-hour format for verse lookup
         int displayHours = hours % 12;
         if (displayHours == 0) displayHours = 12;
 
         // Create the key in format "chapter:verse"
-        String chapter = String.valueOf(displayHours);
-        String verse = String.format("%02d", minutes);
+        final String chapter = String.valueOf(displayHours);
+        final String verse = String.format("%02d", minutes);
 
         // Try to find exact match
-        for(BibleVerse bibleVerse : BibleVerseParserService.INSTANCE.getBibleBibleVerses()) {
-            getLogger().info(String.format("Evalauting %s...", bibleVerse));
-            boolean hasCorrectChapter = bibleVerse.getChapter().equals(chapter);
-            boolean hasCorrectVerse = bibleVerse.getVerse().equals(verse);
-            if(hasCorrectChapter && hasCorrectVerse) {
-                return bibleVerse;
-            }
-        }
-
-        // If no exact match, find the closest verse
-        return findClosestVerse(chapter, verse);
+        return BibleVerseParserService.INSTANCE
+                .getBibleBibleVerses()
+                .stream()
+                .filter(bibleVerse -> {
+                    boolean hasCorrectChapter = bibleVerse.getChapter().equals(chapter);
+                    boolean hasCorrectVerse = bibleVerse.getVerse().equals(verse);
+                    return hasCorrectChapter && hasCorrectVerse;
+                })
+                .findAny()
+                .orElseGet(() -> findClosestVerse(chapter, verse));
     }
 
     private BibleVerse findClosestVerse(String targetChapter, String targetVerse) {
