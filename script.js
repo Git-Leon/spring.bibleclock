@@ -86,9 +86,9 @@ function updateDisplay() {
         referenceElement.textContent = versesToShow
             .map(v => `${v.book} ${verseKey}`)
             .join(' • ');
-        verseElement.textContent = versesToShow
-            .map(v => v.text)
-            .join('\n\n');
+        verseElement.innerHTML = versesToShow
+            .map(v => `<p>${v.text}</p>`)
+            .join('');
     } else {
         // Find closest verse
         const closestKey = findClosestVerse(verseKey);
@@ -98,12 +98,12 @@ function updateDisplay() {
             referenceElement.textContent = versesToShow
                 .map(v => `${v.book} ${closestKey}`)
                 .join(' • ');
-            verseElement.textContent = versesToShow
-                .map(v => v.text)
-                .join('\n\n');
+            verseElement.innerHTML = versesToShow
+                .map(v => `<p>${v.text}</p>`)
+                .join('');
         } else {
             referenceElement.textContent = '';
-            verseElement.textContent = `No verse found for ${verseKey}`;
+            verseElement.innerHTML = `<p>No verse found for ${verseKey}</p>`;
         }
     }
 }
