@@ -22,12 +22,6 @@ public class BibleController {
 
     @GetMapping("/{timeString}")
     public BibleVerse getVerseForTime(@PathVariable String timeString) {
-        try {
-            return bibleService.parseBibleBibleVerses().stream().findAny().get();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (CsvValidationException e) {
-            throw new RuntimeException(e);
-        }
+        return bibleService.getVerseForTime(timeString);
     }
 }

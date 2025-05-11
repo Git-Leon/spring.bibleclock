@@ -1,43 +1,70 @@
 package com.bibleclock.service;
 
 import com.bibleclock.model.BibleVerse;
-import com.opencsv.CSVParser;
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-import com.opencsv.exceptions.CsvValidationException;
-import org.springframework.core.io.ClassPathResource;
+import com.bibleclock.utils.Loggable;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 @Service
-public class BibleService {
+public class BibleService implements Loggable {
 
-    public List<BibleVerse> parseBibleBibleVerses() throws IOException, CsvValidationException {
-        String[] line;
-        final List<BibleVerse> bibleVerses = new ArrayList<>();
-        final InputStream inputStream = new ClassPathResource("data.csv").getInputStream();
-        final InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-        final CSVParser csvParser = new CSVParserBuilder().withSeparator('\t').build();
-        final CSVReader csvReader = new CSVReaderBuilder(reader).withCSVParser(csvParser).build();
-        while ((line = csvReader.readNext()) != null) {
-            if (line.length < 4) {
-                continue; // skip malformed lines
-            }
-            final String book = line[0];
-            final String chapter = line[1];
-            final String verse = line[2];
-            final String text = line[3];
-            final BibleVerse bibleVerse = new BibleVerse(book, text, chapter, verse);
-            bibleVerses.add(bibleVerse);
+    public BibleVerse getVerseForTime(String timeString) {
+        // Parse time string (format: "HH:mm")
+        String[] timeParts = timeString.split(":");
+        if (timeParts.length != 2) {
+            throw new IllegalArgumentException("Invalid time format. Expected HH:mm");
         }
 
-        return bibleVerses;
+        int hours = Integer.parseInt(timeParts[0]);
+        int minutes = Integer.parseInt(timeParts[1]);
+
+        // Convert to 12-hour format for verse lookup
+        int displayHours = hours % 12;
+        if (displayHours == 0) displayHours = 12;
+
+        // Create the key in format "chapter:verse"
+        String chapter = String.valueOf(displayHours);
+        String verse = String.format("%02d", minutes);
+
+        // Try to find exact match
+        for(BibleVerse bibleVerse : BibleVerseParserService.INSTANCE.getBibleBibleVerses()) {
+            getLogger().info(String.format("Evalauting %s...", bibleVerse));
+            boolean hasCorrectChapter = bibleVerse.getChapter().equals(chapter);
+            boolean hasCorrectVerse = bibleVerse.getVerse().equals(verse);
+            if(hasCorrectChapter && hasCorrectVerse) {
+                return bibleVerse;
+            }
+        }
+
+        // If no exact match, find the closest verse
+        return findClosestVerse(chapter, verse);
+    }
+
+    private BibleVerse findClosestVerse(String targetChapter, String targetVerse) {
+        int targetHours = Integer.parseInt(targetChapter);
+        int targetMinutes = Integer.parseInt(targetVerse);
+        int targetTotalMinutes = targetHours * 60 + targetMinutes;
+
+        return BibleVerseParserService.INSTANCE.getBibleBibleVerses().stream()
+            .filter(v -> {
+                try {
+                    int verseHours = Integer.parseInt(v.getChapter());
+                    int verseMinutes = Integer.parseInt(v.getVerse());
+                    int verseTotalMinutes = verseHours * 60 + verseMinutes;
+                    return verseTotalMinutes <= targetTotalMinutes;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            })
+            .max((v1, v2) -> {
+                int time1 = Integer.parseInt(v1.getChapter()) * 60 + Integer.parseInt(v1.getVerse());
+                int time2 = Integer.parseInt(v2.getChapter()) * 60 + Integer.parseInt(v2.getVerse());
+                return Integer.compare(time1, time2);
+            })
+            .orElseGet(() -> {
+                // Default verse if none found
+                return new BibleVerse("John", "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.", "3", "16");
+            });
     }
 }
