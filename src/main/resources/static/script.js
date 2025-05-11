@@ -36,31 +36,31 @@ function findClosestVerse(targetTime) {
     return closestKey;
 }
 
-// Load and parse CSV
+// Load verse from Spring Boot endpoint
 async function loadVerses() {
     try {
-        const response = await fetch('kjv.csv');
-        const csvText = await response.text();
-        const rows = csvText.split('\n').slice(1); // Skip header row
-
-        rows.forEach(row => {
-            const [book, chapter, verse, text] = row.split(',').map(field => field.trim());
-            if (book && chapter && verse && text) {
-                const key = `${chapter}:${verse}`;
-                if (!verses[key]) {
-                    verses[key] = [];
-                }
-                verses[key].push({
-                    book: book.charAt(0).toUpperCase() + book.slice(1).toLowerCase(),
-                    text: text
-                });
-            }
-        });
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        
+        const response = await fetch(`http://localhost:8080/book/bible/${timeString}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const verseData = await response.json();
+        
+        // Store the verse in our verses object
+        const key = `${hours % 12 || 12}:${minutes.toString().padStart(2, '0')}`;
+        verses[key] = [{
+            book: verseData.book,
+            text: verseData.text
+        }];
 
         updateDisplay();
     } catch (error) {
-        console.error('Error loading verses:', error);
-        verseElement.textContent = 'Error loading verses. Please try again later.';
+        console.error('Error loading verse:', error);
+        verseElement.innerHTML = '<p>Error loading verse. Please try again later.</p>';
     }
 }
 
