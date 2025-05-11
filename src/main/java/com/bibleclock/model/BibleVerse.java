@@ -1,40 +1,27 @@
 package com.bibleclock.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.Data;
+
+@Entity
+@Data
 public class BibleVerse {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
     private String book;
     private String text;
     private String chapter;
     private String verse;
 
-    public String getBook() {
-        return book;
-    }
-
-    public void setBook(String book) {
+    public BibleVerse(String book, String text, String chapter, String verse) {
         this.book = book;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
         this.text = text;
-    }
-
-    public String getChapter() {
-        return chapter;
-    }
-
-    public void setChapter(String chapter) {
         this.chapter = chapter;
-    }
-
-    public String getVerse() {
-        return verse;
-    }
-
-    public void setVerse(String verse) {
         this.verse = verse;
     }
 }
