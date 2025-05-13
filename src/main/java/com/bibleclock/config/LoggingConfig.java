@@ -11,6 +11,8 @@ import org.springframework.util.StopWatch;
 
 import java.util.Arrays;
 
+@Aspect
+@Component
 public class LoggingConfig implements Loggable {
 
     //AOP expression for which methods shall be intercepted
