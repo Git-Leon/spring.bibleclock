@@ -3,15 +3,13 @@ package com.bibleclock.controller;
 import com.bibleclock.model.BibleVerse;
 import com.bibleclock.service.BibleService;
 import com.opencsv.exceptions.CsvValidationException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
 @RestController
 @RequestMapping("/book/bible")
+@CrossOrigin(origins = "*")
 public class BibleController {
 
     private final BibleService bibleService;

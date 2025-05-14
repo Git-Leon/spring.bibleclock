@@ -18,7 +18,7 @@ import java.util.List;
 public enum BibleVerseParserService {
     INSTANCE;
 
-    private List<BibleVerse> bibleVerses;
+    private final List<BibleVerse> bibleVerses;
 
     BibleVerseParserService() {
         String[] line;
