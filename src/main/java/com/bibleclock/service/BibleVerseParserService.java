@@ -1,12 +1,16 @@
 package com.bibleclock.service;
 
 import com.bibleclock.model.BibleVerse;
+import com.bibleclock.repository.BibleVerseRepository;
 import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,12 +19,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public enum BibleVerseParserService {
-    INSTANCE;
+@Service
+public class BibleVerseParserService {
+    @Autowired
+    private BibleVerseRepository repository;
 
-    private final List<BibleVerse> bibleVerses;
-
-    BibleVerseParserService() {
+    @PostConstruct
+    public void setup() {
         String[] line;
         final List<BibleVerse> bibleVerses = new ArrayList<>();
         final InputStream inputStream;
@@ -51,11 +56,14 @@ public enum BibleVerseParserService {
             bibleVerses.add(bibleVerse);
         }
 
-        this.bibleVerses = bibleVerses;
+        repository.saveAll(bibleVerses);
     }
 
 
     public List<BibleVerse> getBibleBibleVerses() {
-        return this.bibleVerses;
+        final Iterable<BibleVerse> bibleVerseIterable = repository.findAll();
+        final List<BibleVerse> bibleVerseList = new ArrayList<>();
+        bibleVerseIterable.forEach(bibleVerseList::add);
+        return bibleVerseList;
     }
 }

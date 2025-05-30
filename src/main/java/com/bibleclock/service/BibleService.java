@@ -2,12 +2,16 @@ package com.bibleclock.service;
 
 import com.bibleclock.model.BibleVerse;
 import com.bibleclock.utils.Loggable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
 public class BibleService implements Loggable {
+
+    @Autowired
+    private BibleVerseParserService service;
 
     public BibleVerse getVerseForTime(String timeString) {
         // Parse time string (format: "HH:mm")
@@ -28,7 +32,7 @@ public class BibleService implements Loggable {
         final String verse = String.format("%02d", minutes);
 
         // Try to find exact match
-        return BibleVerseParserService.INSTANCE
+        return service
                 .getBibleBibleVerses()
                 .stream()
                 .filter(bibleVerse -> {
@@ -41,24 +45,24 @@ public class BibleService implements Loggable {
     }
 
     private BibleVerse findClosestVerse(String targetChapter, String targetVerse) {
-        int targetHours = Integer.parseInt(targetChapter);
-        int targetMinutes = Integer.parseInt(targetVerse);
-        int targetTotalMinutes = targetHours * 60 + targetMinutes;
+        final int targetHours = Integer.parseInt(targetChapter);
+        final int targetMinutes = Integer.parseInt(targetVerse);
+        final int targetTotalMinutes = targetHours * 60 + targetMinutes;
 
-        return BibleVerseParserService.INSTANCE.getBibleBibleVerses().stream()
+        return service.getBibleBibleVerses().stream()
             .filter(v -> {
                 try {
-                    int verseHours = Integer.parseInt(v.getChapter());
-                    int verseMinutes = Integer.parseInt(v.getVerse());
-                    int verseTotalMinutes = verseHours * 60 + verseMinutes;
+                    final int verseHours = Integer.parseInt(v.getChapter());
+                    final int verseMinutes = Integer.parseInt(v.getVerse());
+                    final int verseTotalMinutes = verseHours * 60 + verseMinutes;
                     return verseTotalMinutes <= targetTotalMinutes;
                 } catch (NumberFormatException e) {
                     return false;
                 }
             })
             .max((v1, v2) -> {
-                int time1 = Integer.parseInt(v1.getChapter()) * 60 + Integer.parseInt(v1.getVerse());
-                int time2 = Integer.parseInt(v2.getChapter()) * 60 + Integer.parseInt(v2.getVerse());
+                final int time1 = Integer.parseInt(v1.getChapter()) * 60 + Integer.parseInt(v1.getVerse());
+                final int time2 = Integer.parseInt(v2.getChapter()) * 60 + Integer.parseInt(v2.getVerse());
                 return Integer.compare(time1, time2);
             })
             .orElseGet(() -> {
